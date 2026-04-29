@@ -1,236 +1,300 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { FaArrowLeft } from "react-icons/fa";
 
-export default function RegisterTalent({ onRegister }) {
-  const [formData, setFormData] = useState({
-    nombre: "",
-    apellido: "",
-    email: "",
-    telefono: "",
-    area: "",
-    especialidad: "",
-    experiencia: "",
-    salario: "",
-    ubicacion: "",
-    currency: "USD",
-  });
+const FormInput = ({
+  label,
+  placeholder,
+  type = "text",
+  value,
+  onChange,
+  width = "100%",
+}) => (
+  <div
+    style={{
+      width,
+      marginBottom: "24px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px",
+    }}
+  >
+    <label
+      style={{
+        color: "#1F2937",
+        fontSize: "14px",
+        fontWeight: "500",
+        fontFamily: "Inter",
+      }}
+    >
+      {label}
+    </label>
+    <input
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      style={{
+        height: "42px",
+        padding: "0 16px",
+        borderRadius: "8px",
+        border: "1px solid #E5E7EB",
+        fontSize: "16px",
+        fontFamily: "Inter",
+        outline: "none",
+      }}
+    />
+  </div>
+);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
+const FormSection = ({ title, children }) => (
+  <div
+    style={{
+      alignSelf: "stretch",
+      display: "flex",
+      flexDirection: "column",
+      gap: "16px",
+      marginBottom: "32px",
+    }}
+  >
+    <div style={{ borderBottom: "1px solid #E5E7EB", paddingBottom: "8px" }}>
+      <h3
+        style={{
+          color: "#1F2937",
+          fontSize: "18px",
+          fontWeight: "600",
+          fontFamily: "Inter",
+          margin: 0,
+        }}
+      >
+        {title}
+      </h3>
+    </div>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
+      {children}
+    </div>
+  </div>
+);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+const FileDropzone = ({ label, helperText }) => (
+  <div
+    style={{
+      flex: "1",
+      minWidth: "300px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px",
+    }}
+  >
+    <span style={{ color: "#1F2937", fontSize: "14px", fontWeight: "500" }}>
+      {label}
+    </span>
+    <div
+      style={{
+        height: "132px",
+        borderRadius: "8px",
+        border: "2px dashed #E5E7EB",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        cursor: "pointer",
+        backgroundColor: "#FAFBFC",
+      }}
+    >
+      <div style={{ color: "#6B7280", fontSize: "14px" }}>
+        Arrastra el archivo aquí
+      </div>
+      <div style={{ color: "#9CA3AF", fontSize: "12px" }}>{helperText}</div>
+    </div>
+  </div>
+);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setMessage("");
-
-    await new Promise((resolve) => setTimeout(resolve, 700));
-
-    const newTalent = {
-      nombre: formData.nombre,
-      apellido: formData.apellido,
-      email: formData.email,
-      telefono: formData.telefono,
-      area: formData.area,
-      especialidades: formData.especialidad ? [formData.especialidad] : [],
-      salario: Number(formData.salario) || 0,
-      currency: formData.currency,
-      ubicacion: formData.ubicacion,
-    };
-
-    if (typeof onRegister === "function") {
-      onRegister(newTalent);
-    }
-
-    setMessage("Talento registrado exitosamente!");
-    setFormData({
-      nombre: "",
-      apellido: "",
-      email: "",
-      telefono: "",
-      area: "",
-      especialidad: "",
-      experiencia: "",
-      salario: "",
-      ubicacion: "",
-      currency: "USD",
-    });
-    setIsSubmitting(false);
-  };
-
+const RegisterTalent = ({ onBack }) => {
   return (
-    <div className="max-w-2xl mx-auto p-8 form-surface rounded-3xl shadow-2xl border border-white/10">
-      <h2 className="text-3xl font-semibold text-white mb-6 tracking-tight">
-        Registro de Talento
-      </h2>
+    <div
+      style={{
+        backgroundColor: "rgb(243, 244, 246)",
+        width: "100%",
+        minHeight: "calc(100vh - 68px)",
+        boxSizing: "border-box",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1100px",
+          margin: "0 auto",
+          padding: "36px 24px",
+          fontSize: "16px",
+          fontFamily: '"Inter", sans-serif',
+          fontWeight: 600,
+        }}
+      >
+        {/* Botón Volver */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            style={{
+              color: "#1A73E8",
+              border: "none",
+              background: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "20px",
+              fontSize: "16px",
+              fontFamily: '"Inter", sans-serif',
+              fontWeight: 600,
+            }}
+          >
+            <FaArrowLeft />
+            Volver a Búsqueda
+          </button>
+        )}
 
-      {message && (
         <div
-          className={`mb-4 p-4 rounded-xl text-sm font-medium ${message.includes("exitosamente") ? "bg-emerald-100 text-emerald-900" : "bg-rose-100 text-rose-900"}`}
+          style={{
+            background: "white",
+            padding: "32px",
+            paddingTop: "24px",
+            borderRadius: "12px",
+            boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+            border: "1px solid #E5E7EB",
+          }}
         >
-          {message}
-        </div>
-      )}
+          <h2
+            style={{
+              fontSize: "24px",
+              fontWeight: "600",
+              marginBottom: "32px",
+              fontFamily: "Inter",
+            }}
+          >
+            Registro de Nuevo Candidato
+          </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-base font-semibold form-label mb-1">
-              Nombre
-            </label>
-            <input
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              required
-              className="form-input w-full px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              placeholder="Ingrese nombre"
-            />
-          </div>
+          <form>
+            <FormSection title="I. Datos Personales">
+              <FormInput
+                label="Nombre Completo *"
+                placeholder="Nombres y Apellidos"
+              />
+              <div style={{ display: "flex", gap: "16px", width: "100%" }}>
+                <FormInput
+                  label="Identificación *"
+                  placeholder="V-12345678"
+                  width="50%"
+                />
+                <FormInput
+                  label="Fecha de Nacimiento *"
+                  type="date"
+                  width="50%"
+                />
+              </div>
+              <div style={{ display: "flex", gap: "16px", width: "100%" }}>
+                <FormInput
+                  label="Teléfono *"
+                  placeholder="+58 412..."
+                  width="50%"
+                />
+                <FormInput
+                  label="Correo Electrónico *"
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  width="50%"
+                />
+              </div>
+              <FormInput label="Dirección *" placeholder="Direccion completa" />
+            </FormSection>
 
-          <div>
-            <label className="block text-base font-semibold form-label mb-1">
-              Apellido
-            </label>
-            <input
-              type="text"
-              name="apellido"
-              value={formData.apellido}
-              onChange={handleChange}
-              required
-              className="form-input w-full px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              placeholder="Ingrese apellido"
-            />
-          </div>
-        </div>
+            <FormSection title="II. Perfil Profesional">
+              <div style={{ width: "100%" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "8px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                  }}
+                >
+                  Área de Trabajo *
+                </label>
+                <select
+                  style={{
+                    width: "100%",
+                    height: "42px",
+                    borderRadius: "8px",
+                    border: "1px solid #E5E7EB",
+                    outline: "none",
+                  }}
+                >
+                  <option>Seleccione un área...</option>
+                </select>
+              </div>
+            </FormSection>
 
-        <div>
-          <label className="block text-base font-semibold form-label mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="form-input w-full px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            placeholder="correo@ejemplo.com"
-          />
-        </div>
+            <FormSection title="III. Documentación y Aspiración">
+              <FormInput
+                label="Expectativa Salarial *"
+                type="number"
+                placeholder="Ej: 35000"
+              />
+              <div style={{ display: "flex", gap: "16px", width: "100%" }}>
+                <FileDropzone
+                  label="Documento de Identidad"
+                  helperText="PDF o JPG (máx. 5MB)"
+                />
+                <FileDropzone
+                  label="Referencias Personales"
+                  helperText="PDF o JPG (máx. 5MB)"
+                />
+              </div>
+            </FormSection>
 
-        <div>
-          <label className="block text-base font-semibold form-label mb-1">
-            Teléfono
-          </label>
-          <input
-            type="tel"
-            name="telefono"
-            value={formData.telefono}
-            onChange={handleChange}
-            className="form-input w-full px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            placeholder="+1234567890"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Área
-            </label>
-            <select
-              name="area"
-              value={formData.area}
-              onChange={handleChange}
-              required
-              className="form-select w-full px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            {/* Botones de Acción */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "16px",
+                marginTop: "40px",
+                paddingTop: "24px",
+                borderTop: "1px solid #E5E7EB",
+              }}
             >
-              <option value="">Seleccione área</option>
-              <option value="Tecnología">Tecnología</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Ventas">Ventas</option>
-              <option value="Finanzas">Finanzas</option>
-              <option value="Recursos Humanos">Recursos Humanos</option>
-              <option value="Diseño">Diseño</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-base font-semibold form-label mb-1">
-              Especialidad
-            </label>
-            <input
-              type="text"
-              name="especialidad"
-              value={formData.especialidad}
-              onChange={handleChange}
-              className="form-input w-full px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              placeholder="Ej: Frontend Developer"
-            />
-          </div>
+              <button
+                type="button"
+                onClick={onBack}
+                style={{
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  border: "1px solid #E5E7EB",
+                  background: "white",
+                  cursor: "pointer",
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                style={{
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  background: "#1A73E8",
+                  color: "white",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                }}
+              >
+                Guardar Candidato
+              </button>
+            </div>
+          </form>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-base font-semibold form-label mb-1">
-              Experiencia (años)
-            </label>
-            <input
-              type="number"
-              name="experiencia"
-              value={formData.experiencia}
-              onChange={handleChange}
-              min="0"
-              className="form-input w-full px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              placeholder="0"
-            />
-          </div>
-
-          <div>
-            <label className="block text-base font-semibold form-label mb-1">
-              Salario esperado
-            </label>
-            <input
-              type="number"
-              name="salario"
-              value={formData.salario}
-              onChange={handleChange}
-              min="0"
-              className="form-input w-full px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              placeholder="50000"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-base font-semibold form-label mb-1">
-            Ubicación
-          </label>
-          <input
-            type="text"
-            name="ubicacion"
-            value={formData.ubicacion}
-            onChange={handleChange}
-            className="form-input w-full px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            placeholder="Ciudad, País"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-cyan-500 text-slate-950 font-semibold py-3 px-4 rounded-2xl hover:bg-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-        >
-          {isSubmitting ? "Registrando..." : "Registrar Talento"}
-        </button>
-      </form>
+      </div>
     </div>
   );
-}
+};
+
+export default RegisterTalent;
