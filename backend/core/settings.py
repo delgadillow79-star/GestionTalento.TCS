@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_countries',
     'corsheaders',
     'rest_framework',
     'talento',
@@ -124,8 +125,15 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Media files (uploaded documents, CVs, images)
+# MEDIA_ROOT apunta a la raíz del backend porque FileField ya incluye
+# 'documentos/' en su upload_to (ej: 'documentos/referencias/archivo.jpg')
+MEDIA_URL = '/documentos/'
+MEDIA_ROOT = BASE_DIR
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+COUNTRIES_ONLY = ['VE']

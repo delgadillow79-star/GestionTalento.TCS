@@ -1,46 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { FaArrowLeft } from "react-icons/fa";
+import ciudadesVE from '../ciudadesVE.json';
+import api from '../api';
 
-const FormInput = ({
-  label,
-  placeholder,
-  type = "text",
-  value,
-  onChange,
-  width = "100%",
-}) => (
-  <div
-    style={{
-      width,
-      marginBottom: "24px",
-      display: "flex",
-      flexDirection: "column",
-      gap: "8px",
-    }}
-  >
-    <label
+const FormSelect = ({ label, value, onChange, options, width = "100%", defaultOption = "Seleccione...", disabled = false }) => (
+  <div style={{ width, marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <label style={{ color: '#1F2937', fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>
+      {label}
+    </label>
+    <select
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
       style={{
-        color: "#1F2937",
-        fontSize: "14px",
-        fontWeight: "500",
-        fontFamily: "Inter",
+        height: '42px',
+        padding: '0 16px',
+        borderRadius: '8px',
+        border: '1px solid #E5E7EB',
+        fontSize: '16px',
+        fontFamily: 'Inter',
+        outline: 'none',
+        backgroundColor: disabled ? '#F3F4F6' : 'white',
+        color: disabled ? '#6B7280' : 'inherit',
+        cursor: disabled ? 'not-allowed' : 'pointer'
       }}
     >
+      <option value="">{defaultOption}</option>
+      {options?.map((opt, idx) => (
+        <option key={idx} value={opt}>{opt}</option>
+      ))}
+    </select>
+  </div>
+);
+
+const FormInput = ({ label, placeholder, type = "text", value, onChange, width = "100%", disabled = false, readOnly = false, name }) => (
+  <div style={{ width, marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <label style={{ color: '#1F2937', fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>
       {label}
     </label>
     <input
       type={type}
+      name={name}
       placeholder={placeholder}
       value={value}
       onChange={onChange}
+      disabled={disabled}
+      readOnly={readOnly}
       style={{
-        height: "42px",
-        padding: "0 16px",
-        borderRadius: "8px",
-        border: "1px solid #E5E7EB",
-        fontSize: "16px",
-        fontFamily: "Inter",
-        outline: "none",
+        height: '42px',
+        padding: '0 16px',
+        borderRadius: '8px',
+        border: '1px solid #E5E7EB',
+        fontSize: '16px',
+        fontFamily: 'Inter',
+        outline: 'none'
       }}
     />
   </div>
@@ -76,40 +89,179 @@ const FormSection = ({ title, children }) => (
 );
 
 const FileDropzone = ({ label, helperText }) => (
-  <div
-    style={{
-      flex: "1",
-      minWidth: "300px",
-      display: "flex",
-      flexDirection: "column",
-      gap: "8px",
-    }}
-  >
-    <span style={{ color: "#1F2937", fontSize: "14px", fontWeight: "500" }}>
-      {label}
-    </span>
-    <div
-      style={{
-        height: "132px",
-        borderRadius: "8px",
-        border: "2px dashed #E5E7EB",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        cursor: "pointer",
-        backgroundColor: "#FAFBFC",
-      }}
-    >
-      <div style={{ color: "#6B7280", fontSize: "14px" }}>
-        Arrastra el archivo aquí
-      </div>
-      <div style={{ color: "#9CA3AF", fontSize: "12px" }}>{helperText}</div>
+  <div style={{ flex: '1', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <span style={{ color: '#1F2937', fontSize: '14px', fontWeight: '500' }}>{label}</span>
+    <div style={{
+      height: '132px',
+      borderRadius: '8px',
+      border: '2px dashed #E5E7EB',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      cursor: 'pointer',
+      backgroundColor: '#FAFBFC'
+    }}>
+      <div style={{ color: '#6B7280', fontSize: '14px' }}>Arrastra el archivo aquí</div>
+      <div style={{ color: '#9CA3AF', fontSize: '12px' }}>{helperText}</div>
     </div>
   </div>
 );
 
 const RegisterTalent = ({ onBack }) => {
+  const [formData, setFormData] = useState({
+    cedula: '',
+    nombre_completo: '',
+    email: '',
+    telefono: '',
+    direccion: '',
+    fecha_nacimiento: '',
+  });
+  const [pais, setPais] = useState('');
+  const [ciudad, setCiudad] = useState('');
+
+  // Estado para la data cruda del backend
+  const [areas, setAreas] = useState([]);
+  const [especialidades, setEspecialidades] = useState([]);
+
+  // Estado para agregar multiples areas y especiliades a el candidato 
+  const [bloquesAreas, setBloquesAreas] = useState([
+    { area: '', especialidades: [] }
+  ]);
+  const agregarBloque = () => {
+    setBloquesAreas([...bloquesAreas, { area: '', especialidades: [] }]);
+  };
+
+  const handleAreaChange = (index, value) => {
+    const nuevosBloques = [...bloquesAreas];
+    nuevosBloques[index].area = value;
+    // Si cambia de area, se limpian las especialidades previas
+    nuevosBloques[index].especialidades = [];
+    setBloquesAreas(nuevosBloques);
+  };
+
+  const handleEspecialidadesChange = (index, selectedOptions) => {
+    const nuevosBloques = [...bloquesAreas];
+    const values = Array.from(selectedOptions, option => option.value);
+    nuevosBloques[index].especialidades = values;
+    setBloquesAreas(nuevosBloques);
+  };
+
+  const eliminarBloque = (index) => {
+    const nuevosBloques = [...bloquesAreas];
+    nuevosBloques.splice(index, 1);
+    setBloquesAreas(nuevosBloques);
+  };
+  //Estado para las expectativas salariales
+  const [salarial, setSalarial] = useState('');
+  // Estados para los Archivos
+  const [docsIdentidad, setDocsIdentidad] = useState([]); // Array de máx 3
+  const [cv, setCv] = useState(null); // Archivo único (máx 1)
+
+  const [disponibilidad, setDisponibilidad] = useState('');
+  const opcionesDisponibilidad = ['Inmediata',
+    '15 días', '30 días', 'Remoto',
+    'Presencial', 'Híbrido', 'Negociable'];
+  const [moneda, setMoneda] = useState('');
+  const opcionesMoneda = ['USD', 'EUR'];
+
+  useEffect(() => {
+    const cargarDatosIniciales = async () => {
+      try {
+        const [resAreas, resEspec] = await Promise.all([
+          api.get('areas/'),
+          api.get('especialidades/')
+        ]);
+        setAreas(resAreas.data);
+        setEspecialidades(resEspec.data);
+      } catch (error) {
+        console.error("Error al cargar filtros:", error);
+      }
+    };
+    cargarDatosIniciales();
+  }, []);
+
+
+
+
+
+  const handleDocsIdentidadChange = (e) => {
+    const choosenFiles = Array.from(e.target.files);
+    if (choosenFiles.length > 3) {
+      alert("Solamente puedes subir un máximo de 3 archivos en esta sección.");
+      setDocsIdentidad(choosenFiles.slice(0, 3));
+    } else {
+      setDocsIdentidad(choosenFiles);
+    }
+  };
+  const handleCvChange = (e) => {
+    const choosenFile = Array.from(e.target.files);
+    if (choosenFile.length > 1) {
+      alert("Solamente puedes subir un archivo en esta sección.");
+      setCv(choosenFile.slice(0, 1));
+    } else {
+      setCv(choosenFile);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Evita que la página se reinicie
+
+    const pack = new FormData();
+
+    // 1. Agregamos los campos de texto
+    pack.append('cedula', formData.cedula);
+    pack.append('nombre_completo', formData.nombre_completo);
+    pack.append('email', formData.email);
+    pack.append('telefono', formData.telefono);
+    pack.append('direccion', formData.direccion);
+    pack.append('fecha_nacimiento', formData.fecha_nacimiento);
+    pack.append('pais', pais);
+    pack.append('ciudad', ciudad);
+
+    // 3. Agregamos las áreas y especialidades
+    bloquesAreas.forEach(bloque => {
+      bloque.especialidades.forEach(espId => {
+        // Django automáticamente tomará esto como la lista M2M (Muchas a Muchas)
+        pack.append('especialidades', espId);
+      });
+    });
+
+    if (salarial) {
+      pack.append('aspiracion_salarial', salarial);
+      pack.append('moneda', moneda);
+    }
+    if (disponibilidad) pack.append('disponibilidad', disponibilidad);
+
+    // 2. Agregamos los archivos
+    if (docsIdentidad.length > 0) {
+      pack.append('url_documento_id', docsIdentidad[0]);
+    }
+    // Si cv es un array,  tomamos el primer elemento
+    if (cv && cv.length > 0) {
+      pack.append('url_referencias', cv[0]);
+    }
+
+    // 4. Agregamos el estatus por defecto
+    pack.append('estatus', 'Pendiente');
+
+    try {
+      const respuesta = await api.post('candidatos/', pack, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      alert("Candidato registrado como un éxito!");
+    } catch (error) {
+      console.error("Detalle del error:", error.response?.data || error);
+      const errorMsg = error.response?.data
+        ? JSON.stringify(error.response.data, null, 2)
+        : "Revisa si faltaron datos obligatorios.";
+      alert("Falló la creación. El servidor dice:\n\n" + errorMsg);
+    }
+  };
   return (
     <div
       style={{
@@ -173,120 +325,54 @@ const RegisterTalent = ({ onBack }) => {
             Registro de Nuevo Candidato
           </h2>
 
-          <form>
+          <form onSubmit={handleSubmit}>
             <FormSection title="I. Datos Personales">
-              <FormInput
-                label="Nombre Completo *"
-                placeholder="Nombres y Apellidos"
-              />
-              <div style={{ display: "flex", gap: "16px", width: "100%" }}>
-                <FormInput
-                  label="Identificación *"
-                  placeholder="V-12345678"
-                  width="50%"
-                />
-                <FormInput
-                  label="Fecha de Nacimiento *"
-                  type="date"
-                  width="50%"
-                />
+              <FormInput label="Nombre Completo *" placeholder="Nombres y Apellidos" />
+              <div style={{ display: 'flex', gap: '16px', width: '100%' }}>
+                <FormInput label="Identificación *" placeholder="V-12345678" width="50%" />
+                <FormInput label="Fecha de Nacimiento *" type="date" width="50%" />
               </div>
-              <div style={{ display: "flex", gap: "16px", width: "100%" }}>
-                <FormInput
-                  label="Teléfono *"
-                  placeholder="+58 412..."
-                  width="50%"
-                />
-                <FormInput
-                  label="Correo Electrónico *"
-                  type="email"
-                  placeholder="correo@ejemplo.com"
-                  width="50%"
-                />
+              <div style={{ display: 'flex', gap: '16px', width: '100%' }}>
+                <FormInput label="Teléfono *" placeholder="+58 412..." width="50%" />
+                <FormInput label="Correo Electrónico *" type="email" placeholder="correo@ejemplo.com" width="50%" />
               </div>
-              <FormInput label="Dirección *" placeholder="Direccion completa" />
+              <FormInput label="Dirección *"
+                placeholder="Direccion corta"
+                value={formData.direccion}
+                onChange={handleInputChange}
+                name="direccion" />
             </FormSection>
 
             <FormSection title="II. Perfil Profesional">
-              <div style={{ width: "100%" }}>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                  }}
-                >
-                  Área de Trabajo *
-                </label>
-                <select
-                  style={{
-                    width: "100%",
-                    height: "42px",
-                    borderRadius: "8px",
-                    border: "1px solid #E5E7EB",
-                    outline: "none",
-                  }}
-                >
+              <div style={{ width: '100%' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>Área de Trabajo *</label>
+                <select style={{ width: '100%', height: '42px', borderRadius: '8px', border: '1px solid #E5E7EB', outline: 'none' }}>
                   <option>Seleccione un área...</option>
                 </select>
               </div>
+              <FormSelect
+                label="Disponibilidad *"
+                value={disponibilidad}
+                onChange={(e) => setDisponibilidad(e.target.value)}
+                options={opcionesDisponibilidad}
+                width="100%"
+              />
             </FormSection>
 
             <FormSection title="III. Documentación y Aspiración">
-              <FormInput
-                label="Expectativa Salarial *"
-                type="number"
-                placeholder="Ej: 35000"
-              />
-              <div style={{ display: "flex", gap: "16px", width: "100%" }}>
-                <FileDropzone
-                  label="Documento de Identidad"
-                  helperText="PDF o JPG (máx. 5MB)"
-                />
-                <FileDropzone
-                  label="Referencias Personales"
-                  helperText="PDF o JPG (máx. 5MB)"
-                />
+              <FormInput label="Expectativa Salarial *" type="number" placeholder="Ej: 35000" />
+              <div style={{ display: 'flex', gap: '16px', width: '100%' }}>
+                <FileDropzone label="Documento de Identidad" helperText="PDF o JPG (máx. 5MB)" />
+                <FileDropzone label="Referencias Personales" helperText="PDF o JPG (máx. 5MB)" />
               </div>
             </FormSection>
 
             {/* Botones de Acción */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "16px",
-                marginTop: "40px",
-                paddingTop: "24px",
-                borderTop: "1px solid #E5E7EB",
-              }}
-            >
-              <button
-                type="button"
-                onClick={onBack}
-                style={{
-                  padding: "12px 24px",
-                  borderRadius: "8px",
-                  border: "1px solid #E5E7EB",
-                  background: "white",
-                  cursor: "pointer",
-                }}
-              >
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '40px', paddingTop: '24px', borderTop: '1px solid #E5E7EB' }}>
+              <button type="button" onClick={onBack} style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid #E5E7EB', background: 'white', cursor: 'pointer' }}>
                 Cancelar
               </button>
-              <button
-                type="submit"
-                style={{
-                  padding: "12px 24px",
-                  borderRadius: "8px",
-                  background: "#1A73E8",
-                  color: "white",
-                  border: "none",
-                  cursor: "pointer",
-                  fontWeight: "500",
-                }}
-              >
+              <button type="submit" style={{ padding: '12px 24px', borderRadius: '8px', background: '#1A73E8', color: 'white', border: 'none', cursor: 'pointer', fontWeight: '500' }}>
                 Guardar Candidato
               </button>
             </div>
